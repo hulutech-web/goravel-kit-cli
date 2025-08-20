@@ -59,7 +59,8 @@ func printWelcomeBanner(projectName string) {
 	cyan := color.New(color.FgCyan, color.Bold)
 	green := color.New(color.FgGreen, color.Bold)
 	yellow := color.New(color.FgYellow, color.Bold)
-
+	fmt.Printf("\n")
+	fmt.Printf("\n")
 	cyan.Println(" ██████   ██████  ██████   █████  ██    ██ ███████ ██          ██   ██ ██ ████████      ██████ ██      ██ ")
 	cyan.Println("██       ██    ██ ██   ██ ██   ██ ██    ██ ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
 	cyan.Println("██   ███ ██    ██ ██████  ███████ ██    ██ █████   ██          █████   ██    ██        ██      ██      ██ ")
