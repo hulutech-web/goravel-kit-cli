@@ -14,7 +14,7 @@ import (
 func CloneRepositoryWithContext(ctx context.Context, repoURL, branch, targetDir string, verbose bool) error {
 	args := []string{"clone", "--progress", "--depth", "1"}
 
-	if branch != "" && branch != "main" {
+	if branch != "" && branch != "master" {
 		args = append(args, "--branch", branch)
 	}
 

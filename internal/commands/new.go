@@ -13,47 +13,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-var NewCommand = &cli.Command{
-	Name:      "new",
-	Usage:     "Create a new Goravel application from template",
-	ArgsUsage: "<project-name>",
-	Action:    createNewProject,
-	Flags: []cli.Flag{
-		&cli.BoolFlag{
-			Name:  "force",
-			Usage: "Force create project even if directory exists",
-		},
-		&cli.StringFlag{
-			Name:  "branch",
-			Usage: "Git branch to use",
-			Value: "master",
-		},
-		&cli.BoolFlag{
-			Name:  "verbose",
-			Usage: "Show verbose output",
-		},
-		&cli.BoolFlag{
-			Name:  "ssh",
-			Usage: "Use SSH URL instead of HTTPS",
-		},
-		&cli.DurationFlag{
-			Name:  "timeout",
-			Usage: "Timeout for download operation",
-			Value: 5 * time.Minute,
-		},
-	},
-}
-
-func display_banner() {
-	fmt.Println(" ██████   ██████  ██████   █████  ██    ██ ███████ ██          ██   ██ ██ ████████      ██████ ██      ██ ")
-	fmt.Println("██       ██    ██ ██   ██ ██   ██ ██    ██ ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
-	fmt.Println("██   ███ ██    ██ ██████  ███████ ██    ██ █████   ██          █████   ██    ██        ██      ██      ██ ")
-	fmt.Println("██    ██ ██    ██ ██   ██ ██   ██  ██  ██  ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
-	fmt.Println(" ██████   ██████  ██   ██ ██   ██   ████   ███████ ███████     ██   ██ ██    ██         ██████ ███████ ██ ")
-	fmt.Println("                                                                                                          ")
-	fmt.Println("                                                                                                          ")
-}
-
 // 添加版权信息显示函数
 func printWelcomeBanner(projectName string) {
 	cyan := color.New(color.FgCyan, color.Bold)
@@ -81,6 +40,55 @@ func printWelcomeBanner(projectName string) {
 	fmt.Printf("\n")
 }
 
+var NewCommand = &cli.Command{
+	Name:      "new",
+	Usage:     "Create a new Goravel application from template",
+	ArgsUsage: "<project-name>",
+	Action:    createNewProject,
+	Flags: []cli.Flag{
+		&cli.BoolFlag{
+			Name:  "force",
+			Usage: "Force create project even if directory exists",
+		},
+		&cli.StringFlag{
+			Name:  "branch",
+			Usage: "Git branch to use",
+			Value: "master",
+		},
+		&cli.BoolFlag{
+			Name:  "verbose",
+			Usage: "Show verbose output",
+		},
+		&cli.BoolFlag{
+			Name:  "ssh",
+			Usage: "Use SSH URL instead of HTTPS",
+			Value: true, // 默认启用 SSH
+		},
+		&cli.BoolFlag{
+			Name:  "https",
+			Usage: "Use HTTPS URL instead of SSH",
+			Value: false,
+		},
+		&cli.DurationFlag{
+			Name:  "timeout",
+			Usage: "Timeout for download operation",
+			Value: 3 * time.Minute,
+		},
+		&cli.BoolFlag{
+			Name:  "no-banner",
+			Usage: "Don't show welcome banner",
+		},
+		&cli.BoolFlag{
+			Name:  "gitee-only",
+			Usage: "Use Gitee mirror only (skip GitHub)",
+		},
+		&cli.BoolFlag{
+			Name:  "github-only",
+			Usage: "Use GitHub only (skip Gitee fallback)",
+		},
+	},
+}
+
 func createNewProject(c *cli.Context) error {
 	if c.Args().Len() < 1 {
 		return fmt.Errorf("project name is required\nUsage: goravel-kit-cli new <project-name>")
@@ -91,75 +99,192 @@ func createNewProject(c *cli.Context) error {
 	force := c.Bool("force")
 	verbose := c.Bool("verbose")
 	useSSH := c.Bool("ssh")
+	useHTTPS := c.Bool("https")
 	timeout := c.Duration("timeout")
+	noBanner := c.Bool("no-banner")
+	giteeOnly := c.Bool("gitee-only")
+	githubOnly := c.Bool("github-only")
 
-	// 设置固定的模板仓库
-	var repoURL string
-	if useSSH {
-		repoURL = "git@github.com:hulutech-web/goravel-kit.git"
+	// 处理协议选择逻辑：如果同时指定了 --https，优先使用 HTTPS
+	var protocol string
+	if useHTTPS {
+		protocol = "https"
+		useSSH = false
 	} else {
-		repoURL = "https://github.com/hulutech-web/goravel-kit.git"
+		protocol = "ssh"
+		useSSH = true
 	}
 
-	printWelcomeBanner(projectName)
-	fmt.Printf("📦 Template: hulutech-web/goravel-kit@%s\n", branch)
+	// 显示版权信息（除非指定不显示）
+	if !noBanner {
+		printWelcomeBanner(projectName)
+	} else {
+		color.New(color.FgHiWhite, color.Bold).Printf("🚀 Creating Goravel project: %s\n", projectName)
+		fmt.Printf("\n")
+	}
+
+	// 智能选择镜像源策略
+	var autoDetectedGiteeOnly bool
+	var networkStatus string
+
+	// 如果不是强制指定了镜像源，就自动检测网络
+	if !giteeOnly && !githubOnly {
+		color.New(color.FgHiCyan).Printf("🌐 检测网络连接...\n")
+
+		if utils.CheckGitHubAccess() {
+			networkStatus = "GitHub 访问正常"
+			autoDetectedGiteeOnly = false
+		} else {
+			networkStatus = "GitHub 访问失败，自动切换到 Gitee"
+			autoDetectedGiteeOnly = true
+			// 自动启用 gitee-only 模式
+			giteeOnly = true
+		}
+		color.New(color.FgHiCyan).Printf("   %s\n", networkStatus)
+	}
+
+	// 定义镜像源
+	mirrors := []struct {
+		name    string
+		url     string
+		sshURL  string
+		enabled bool
+	}{
+		{
+			name:    "GitHub",
+			url:     "https://github.com/hulutech-web/goravel-kit.git",
+			sshURL:  "git@github.com:hulutech-web/goravel-kit.git",
+			enabled: !giteeOnly,
+		},
+		{
+			name:    "Gitee",
+			url:     "https://gitee.com/hulutech/goravel-kit.git",
+			sshURL:  "git@gitee.com:hulutech/goravel-kit.git",
+			enabled: !githubOnly,
+		},
+	}
+
+	// 显示当前使用的镜像源策略
+	color.New(color.FgHiBlue).Printf("📦 模板策略: ")
+	switch {
+	case giteeOnly && autoDetectedGiteeOnly:
+		color.New(color.FgHiBlue).Printf("自动选择 Gitee 镜像 (网络检测)\n")
+	case giteeOnly:
+		color.New(color.FgHiBlue).Printf("强制使用 Gitee 镜像 (用户指定)\n")
+	case githubOnly:
+		color.New(color.FgHiBlue).Printf("强制使用 GitHub 镜像 (用户指定)\n")
+	default:
+		color.New(color.FgHiBlue).Printf("自动选择镜像 (GitHub → Gitee)\n")
+	}
+
+	color.New(color.FgHiBlue).Printf("🌿 分支: %s\n", branch)
+	color.New(color.FgHiBlue).Printf("🔗 协议: %s (默认)\n", protocol)
 
 	if verbose {
-		fmt.Printf("🔗 URL: %s\n", repoURL)
-		fmt.Printf("⏱️  Timeout: %v\n", timeout)
+		color.New(color.FgHiMagenta).Printf("📡 可用镜像源:\n")
+		for _, mirror := range mirrors {
+			if mirror.enabled {
+				var url string
+				if useSSH {
+					url = mirror.sshURL
+				} else {
+					url = mirror.url
+				}
+				color.New(color.FgHiMagenta).Printf("   - %s: %s\n", mirror.name, url)
+			}
+		}
+		color.New(color.FgHiYellow).Printf("⏱️  超时时间: %v\n", timeout)
 	}
 
 	// 检查目录是否存在
 	if utils.DirectoryExists(projectName) && !force {
-		return fmt.Errorf("❌ Directory '%s' already exists. Use --force to overwrite", projectName)
-	}
-
-	// 检查网络连接
-	if verbose {
-		fmt.Printf("🌐 Checking network connection...\n")
-	}
-	if !utils.CheckGitHubAccess() {
-		return fmt.Errorf("❌ Cannot access GitHub. Please check your network connection")
+		return fmt.Errorf("❌ 目录 '%s' 已存在。使用 --force 参数覆盖", projectName)
 	}
 
 	// 创建临时目录
 	tempDir, err := os.MkdirTemp("", "goravel-kit-*")
 	if err != nil {
-		return fmt.Errorf("❌ Failed to create temp directory: %w", err)
+		return fmt.Errorf("❌ 创建临时目录失败: %w", err)
 	}
 	defer func() {
 		if err := os.RemoveAll(tempDir); err != nil && verbose {
-			fmt.Printf("⚠️  Warning: failed to clean temp directory: %v\n", err)
+			color.New(color.FgHiRed).Printf("⚠️  警告: 清理临时目录失败: %v\n", err)
 		}
 	}()
 
-	fmt.Printf("📥 Downloading template...\n")
-	fmt.Printf("   This may take a few moments depending on your network speed.\n")
+	var downloadError error
+	var successMirror string
+	var successRepoURL string
 
-	// 使用带超时的上下文
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+	// 尝试从各个镜像源下载
+	for _, mirror := range mirrors {
+		if !mirror.enabled {
+			continue
+		}
 
-	// 下载模板
-	if err := utils.CloneRepositoryWithContext(ctx, repoURL, branch, tempDir, verbose); err != nil {
-		fmt.Printf("❌ Download failed: %v\n", err)
-		fmt.Printf("💡 Tips:\n")
-		fmt.Printf("   - Try using --ssh flag if you have SSH keys configured\n")
-		fmt.Printf("   - Check your internet connection\n")
-		fmt.Printf("   - Use --verbose for more details\n")
-		return fmt.Errorf("failed to download template")
+		// 选择 URL（默认使用 SSH）
+		var repoURL string
+		if useSSH {
+			repoURL = mirror.sshURL
+		} else {
+			repoURL = mirror.url
+		}
+
+		color.New(color.FgHiGreen).Printf("\n📥 尝试从 %s 下载模板...\n", mirror.name)
+		color.New(color.FgHiCyan).Printf("   📍 仓库: %s\n", repoURL)
+		color.New(color.FgHiCyan).Printf("   🌿 分支: %s\n", branch)
+
+		// 使用带超时的上下文
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+		// 下载模板
+		err := utils.CloneRepositoryWithContext(ctx, repoURL, branch, tempDir, verbose)
+		cancel()
+
+		if err != nil {
+			downloadError = err
+			color.New(color.FgHiRed).Printf("❌ %s 下载失败: %v\n", mirror.name, err)
+
+			// 如果不是最后一个镜像源，继续尝试下一个
+			if hasNextMirror(mirrors, mirror.name) {
+				color.New(color.FgHiYellow).Printf("🔄 尝试下一个镜像源...\n")
+				continue
+			}
+		} else {
+			successMirror = mirror.name
+			successRepoURL = repoURL
+			downloadError = nil
+			break
+		}
 	}
 
-	fmt.Printf("✅ Template downloaded successfully\n")
-	fmt.Printf("🔄 Processing template files...\n")
+	// 检查下载结果
+	if downloadError != nil {
+		color.New(color.FgHiRed).Printf("\n❌ 所有镜像源下载均失败！\n")
+		color.New(color.FgHiYellow).Printf("💡 解决方案:\n")
+		color.New(color.FgHiYellow).Printf("   1. 检查网络连接\n")
+		color.New(color.FgHiYellow).Printf("   2. 使用 --ssh 参数尝试 SSH 方式\n")
+		color.New(color.FgHiYellow).Printf("   3. 使用 --gitee-only 强制使用 Gitee\n")
+		color.New(color.FgHiYellow).Printf("   4. 使用 --github-only 强制使用 GitHub\n")
+		color.New(color.FgHiYellow).Printf("   5. 使用 --verbose 查看详细错误信息\n")
+		color.New(color.FgHiYellow).Printf("   6. 检查分支是否存在: %s\n", branch)
+		return fmt.Errorf("所有镜像源下载失败")
+	}
+
+	color.New(color.FgHiGreen).Printf("\n✅ 成功从 %s 下载模板\n", successMirror)
+	color.New(color.FgHiCyan).Printf("   📍 源仓库: %s\n", successRepoURL)
+	color.New(color.FgHiCyan).Printf("   🌿 分支: %s\n", branch)
+	color.New(color.FgHiGreen).Printf("🔄 处理模板文件中...\n")
 
 	// 移除.git目录
 	gitDir := filepath.Join(tempDir, ".git")
 	if utils.DirectoryExists(gitDir) {
 		if err := os.RemoveAll(gitDir); err != nil {
-			return fmt.Errorf("❌ Failed to remove .git directory: %w", err)
+			return fmt.Errorf("❌ 移除 .git 目录失败: %w", err)
 		}
-		fmt.Printf("🗑️  Removed .git directory\n")
+		if verbose {
+			color.New(color.FgHiYellow).Printf("🗑️  已移除 .git 目录\n")
+		}
 	}
 
 	// 移除其他不必要的文件
@@ -169,7 +294,7 @@ func createNewProject(c *cli.Context) error {
 		if utils.DirectoryExists(filePath) || utils.FileExists(filePath) {
 			os.RemoveAll(filePath)
 			if verbose {
-				fmt.Printf("🗑️  Removed: %s\n", file)
+				color.New(color.FgHiYellow).Printf("🗑️  已移除: %s\n", file)
 			}
 		}
 	}
@@ -177,39 +302,63 @@ func createNewProject(c *cli.Context) error {
 	// 如果目标目录已存在，先删除
 	if utils.DirectoryExists(projectName) {
 		if err := os.RemoveAll(projectName); err != nil {
-			return fmt.Errorf("❌ Failed to remove existing directory: %w", err)
+			return fmt.Errorf("❌ 移除已存在目录失败: %w", err)
 		}
-		fmt.Printf("🗑️  Removed existing directory: %s\n", projectName)
+		if verbose {
+			color.New(color.FgHiYellow).Printf("🗑️  已移除已存在目录: %s\n", projectName)
+		}
 	}
 
 	// 移动到目标位置
 	if err := utils.MoveDirectory(tempDir, projectName); err != nil {
-		return fmt.Errorf("❌ Failed to create project: %w", err)
+		return fmt.Errorf("❌ 创建项目失败: %w", err)
 	}
-	fmt.Printf("📁 Project structure created\n")
+	color.New(color.FgHiGreen).Printf("📁 项目结构创建完成\n")
 
 	// 更新项目中的模块名称
 	if err := updateModuleName(projectName, projectName); err != nil {
-		fmt.Printf("⚠️  Warning: failed to update module name: %v\n", err)
+		color.New(color.FgHiYellow).Printf("⚠️  警告: 更新模块名失败: %v\n", err)
 	} else {
-		fmt.Printf("📝 Updated go.mod module name\n")
+		color.New(color.FgHiGreen).Printf("📝 已更新 go.mod 模块名\n")
 	}
 
 	// 更新环境文件
 	if err := updateEnvFile(projectName, projectName); err != nil {
-		fmt.Printf("⚠️  Warning: failed to update .env file: %v\n", err)
+		color.New(color.FgHiYellow).Printf("⚠️  警告: 更新 .env 文件失败: %v\n", err)
 	} else {
-		fmt.Printf("📝 Updated .env configuration\n")
+		color.New(color.FgHiGreen).Printf("📝 已更新 .env 配置\n")
 	}
 
-	fmt.Printf("\n🎉 Project '%s' created successfully!\n", projectName)
-	fmt.Printf("\n📋 Next steps:\n")
-	fmt.Printf("   cd %s\n", projectName)
-	fmt.Printf("   go mod tidy\n")
-	fmt.Printf("   go run .\n")
-	fmt.Printf("\n💡 Tip: Run with --verbose for detailed output\n")
+	color.New(color.FgHiCyan, color.Bold).Printf("\n🎉 项目 '%s' 创建成功！\n", projectName)
+	color.New(color.FgHiWhite).Printf("\n📋 下一步操作:\n")
+	color.New(color.FgHiGreen).Printf("   cd %s\n", projectName)
+	color.New(color.FgHiGreen).Printf("   go mod tidy\n")
+	color.New(color.FgHiGreen).Printf("   go run .\n")
+	color.New(color.FgHiYellow).Printf("\n💡 提示: 使用 --verbose 参数查看详细输出\n")
 
 	return nil
+}
+
+// hasNextMirror 检查是否还有下一个可用的镜像源
+func hasNextMirror(mirrors []struct {
+	name    string
+	url     string
+	sshURL  string
+	enabled bool
+}, currentMirror string) bool {
+	foundCurrent := false
+	for _, mirror := range mirrors {
+		if !mirror.enabled {
+			continue
+		}
+		if foundCurrent {
+			return true
+		}
+		if mirror.name == currentMirror {
+			foundCurrent = true
+		}
+	}
+	return false
 }
 
 func updateModuleName(projectDir, moduleName string) error {
