@@ -2,11 +2,11 @@ package commands
 
 import (
 	"fmt"
+	"github.com/hulutech-web/goravel-kit-cli/internal/utils"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/hulutech-web/goravel-kit-cli/internal/utils"
 	"github.com/urfave/cli/v2"
 )
 
