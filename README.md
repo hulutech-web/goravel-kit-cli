@@ -5,4 +5,4 @@ A command-line tool to create new Goravel applications from templates.
 ## Installation
 
 ```bash
-go install github.com/your-username/goravel-kit-cli@latest
+go install github.com/huluweb-tech/goravel-kit-cli@latest
