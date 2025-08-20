@@ -23,7 +23,7 @@ var NewCommand = &cli.Command{
 		&cli.StringFlag{
 			Name:  "branch",
 			Usage: "Git branch to use",
-			Value: "main", // 默认分支
+			Value: "master", // 默认分支
 		},
 		&cli.BoolFlag{
 			Name:  "verbose",
