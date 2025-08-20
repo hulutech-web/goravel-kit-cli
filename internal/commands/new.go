@@ -2,11 +2,11 @@ package commands
 
 import (
 	"fmt"
-	"github.com/hulutech-web/goravel-kit-cli/internal/utils"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/hulutech-web/goravel-kit-cli/internal/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -21,11 +21,6 @@ var NewCommand = &cli.Command{
 			Usage: "Force create project even if directory exists",
 		},
 		&cli.StringFlag{
-			Name:  "template",
-			Usage: "GitHub template repository (format: owner/repo)",
-			Value: "goravel/goravel", // 默认模板
-		},
-		&cli.StringFlag{
 			Name:  "branch",
 			Usage: "Git branch to use",
 			Value: "main", // 默认分支
@@ -33,6 +28,10 @@ var NewCommand = &cli.Command{
 		&cli.BoolFlag{
 			Name:  "verbose",
 			Usage: "Show verbose output",
+		},
+		&cli.BoolFlag{
+			Name:  "ssh",
+			Usage: "Use SSH URL instead of HTTPS",
 		},
 	},
 }
@@ -43,14 +42,24 @@ func createNewProject(c *cli.Context) error {
 	}
 
 	projectName := c.Args().First()
-	templateRepo := c.String("template")
 	branch := c.String("branch")
 	force := c.Bool("force")
 	verbose := c.Bool("verbose")
+	useSSH := c.Bool("ssh")
+
+	// 设置固定的模板仓库
+	templateRepo := "hulutech-web/goravel-kit"
+	var repoURL string
+	if useSSH {
+		repoURL = "git@github.com:hulutech-web/goravel-kit.git"
+	} else {
+		repoURL = "https://github.com/hulutech-web/goravel-kit.git"
+	}
 
 	if verbose {
 		fmt.Printf("🚀 Creating project: %s\n", projectName)
 		fmt.Printf("📦 Template: %s@%s\n", templateRepo, branch)
+		fmt.Printf("🔗 URL: %s\n", repoURL)
 	} else {
 		fmt.Printf("Creating project: %s\n", projectName)
 	}
@@ -68,17 +77,17 @@ func createNewProject(c *cli.Context) error {
 	defer os.RemoveAll(tempDir)
 
 	if verbose {
-		fmt.Printf("📥 Downloading template...\n")
+		fmt.Printf("📥 Downloading template from %s...\n", repoURL)
 	}
 
 	// 下载模板
-	repoURL := fmt.Sprintf("https://github.com/%s.git", templateRepo)
 	if err := utils.CloneRepository(repoURL, branch, tempDir); err != nil {
 		return fmt.Errorf("failed to download template: %w", err)
 	}
 
 	if verbose {
 		fmt.Printf("✅ Template downloaded successfully\n")
+		fmt.Printf("🔄 Processing template files...\n")
 	}
 
 	// 移除.git目录（如果存在）
@@ -89,11 +98,14 @@ func createNewProject(c *cli.Context) error {
 		}
 	}
 
-	// 移除其他不必要的文件
+	// 移除其他不必要的文件（可选）
 	unnecessaryFiles := []string{".github", ".gitignore", "LICENSE", "README.md"}
 	for _, file := range unnecessaryFiles {
 		filePath := filepath.Join(tempDir, file)
 		if utils.DirectoryExists(filePath) || utils.FileExists(filePath) {
+			if verbose {
+				fmt.Printf("🗑️  Removing: %s\n", file)
+			}
 			os.RemoveAll(filePath)
 		}
 	}
@@ -110,9 +122,16 @@ func createNewProject(c *cli.Context) error {
 		}
 	}
 
+	// 更新其他可能需要修改的文件
+	if err := updateProjectFiles(projectName, projectName); err != nil {
+		if verbose {
+			fmt.Printf("⚠️  Warning: failed to update project files: %v\n", err)
+		}
+	}
+
 	if verbose {
 		fmt.Printf("🎉 Project '%s' created successfully!\n", projectName)
-		fmt.Printf("\nNext steps:\n")
+		fmt.Printf("\n📋 Next steps:\n")
 		fmt.Printf("  cd %s\n", projectName)
 		fmt.Printf("  go mod tidy\n")
 		fmt.Printf("  go run .\n")
@@ -141,4 +160,25 @@ func updateModuleName(projectDir, moduleName string) error {
 
 	newContent := strings.Join(lines, "\n")
 	return os.WriteFile(goModPath, []byte(newContent), 0644)
+}
+
+func updateProjectFiles(projectDir, projectName string) error {
+	// 这里可以添加其他需要更新的文件
+	// 例如：配置文件、环境文件等
+
+	// 示例：更新 .env 文件中的 APP_NAME
+	envPath := filepath.Join(projectDir, ".env")
+	if utils.FileExists(envPath) {
+		content, err := os.ReadFile(envPath)
+		if err != nil {
+			return err
+		}
+
+		envContent := string(content)
+		envContent = strings.Replace(envContent, "APP_NAME=Goravel", "APP_NAME="+projectName, 1)
+
+		return os.WriteFile(envPath, []byte(envContent), 0644)
+	}
+
+	return nil
 }
