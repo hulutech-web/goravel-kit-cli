@@ -11,17 +11,15 @@ import (
 func main() {
 	app := &cli.App{
 		Name:     "goravel-kit-cli",
-		Usage:    "A CLI tool to create new Goravel applications from hulutech-web/goravel-kit template",
+		Usage:    "A CLI tool to create new Goravel applications from templates",
 		Version:  "v1.0.0",
 		Commands: []*cli.Command{commands.NewCommand},
-		Description: `Goravel Kit CLI - Quickly create new Goravel projects from the official template.
-
-Template repository: https://github.com/hulutech-web/goravel-kit
+		Description: `Goravel Kit CLI - Quickly create new Goravel projects from template.
 
 Examples:
   goravel-kit-cli new my-app
-  goravel-kit-cli new my-app --ssh
-  goravel-kit-cli new my-app --branch develop --verbose`,
+  goravel-kit-cli new my-app --ssh --verbose
+  goravel-kit-cli new my-app --branch develop --force`,
 	}
 
 	if err := app.Run(os.Args); err != nil {

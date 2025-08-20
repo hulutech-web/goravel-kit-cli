@@ -9,7 +9,7 @@ echo "GOBIN: $(go env GOBIN)"
 echo "PATH: $PATH"
 
 # 步骤2：安装工具
-go install github.com/hulutech-web/goravel-kit-cli/cmd/goravel-kit-cli@latest
+go install github.com/hulutech-web/goravel-kit-cli/goravel-kit-cli@latest
 
 # 步骤3：检查安装结果
 ls -la /Users/yuanhao/go/bin/ | grep goravel
