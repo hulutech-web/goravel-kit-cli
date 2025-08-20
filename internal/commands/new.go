@@ -315,13 +315,6 @@ func createNewProject(c *cli.Context) error {
 	}
 	color.New(color.FgHiGreen).Printf("📁 项目结构创建完成\n")
 
-	// 更新项目中的模块名称
-	if err := updateModuleName(projectName, projectName); err != nil {
-		color.New(color.FgHiYellow).Printf("⚠️  警告: 更新模块名失败: %v\n", err)
-	} else {
-		color.New(color.FgHiGreen).Printf("📝 已更新 go.mod 模块名\n")
-	}
-
 	// 更新环境文件
 	if err := updateEnvFile(projectName, projectName); err != nil {
 		color.New(color.FgHiYellow).Printf("⚠️  警告: 更新 .env 文件失败: %v\n", err)
@@ -359,26 +352,6 @@ func hasNextMirror(mirrors []struct {
 		}
 	}
 	return false
-}
-
-func updateModuleName(projectDir, moduleName string) error {
-	goModPath := filepath.Join(projectDir, "go.mod")
-	if !utils.FileExists(goModPath) {
-		return nil
-	}
-
-	content, err := os.ReadFile(goModPath)
-	if err != nil {
-		return err
-	}
-
-	lines := strings.Split(string(content), "\n")
-	if len(lines) > 0 && strings.HasPrefix(lines[0], "module ") {
-		lines[0] = "module " + moduleName
-	}
-
-	newContent := strings.Join(lines, "\n")
-	return os.WriteFile(goModPath, []byte(newContent), 0644)
 }
 
 func updateEnvFile(projectDir, projectName string) error {
