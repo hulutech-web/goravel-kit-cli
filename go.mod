@@ -1,4 +1,4 @@
-module goravel-kit-cli
+module github.com/hulutech-web/goravel-kit-cli
 
 go 1.22.12
 
