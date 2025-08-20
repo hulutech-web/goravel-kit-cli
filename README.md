@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/hulutech-web/goravel-kit-cli/blob/master/images/logo.png?raw=true" width="900" />
+  <img src="https://github.com/hulutech-web/goravel-kit-cli/blob/master/image/logo.png?raw=true" width="900" />
 </p>
 
 
