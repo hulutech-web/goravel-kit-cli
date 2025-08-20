@@ -3,6 +3,7 @@ package commands
 import (
 	"context"
 	"fmt"
+	"github.com/fatih/color"
 	"os"
 	"path/filepath"
 	"strings"
@@ -43,6 +44,42 @@ var NewCommand = &cli.Command{
 	},
 }
 
+func display_banner() {
+	fmt.Println(" ██████   ██████  ██████   █████  ██    ██ ███████ ██          ██   ██ ██ ████████      ██████ ██      ██ ")
+	fmt.Println("██       ██    ██ ██   ██ ██   ██ ██    ██ ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
+	fmt.Println("██   ███ ██    ██ ██████  ███████ ██    ██ █████   ██          █████   ██    ██        ██      ██      ██ ")
+	fmt.Println("██    ██ ██    ██ ██   ██ ██   ██  ██  ██  ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
+	fmt.Println(" ██████   ██████  ██   ██ ██   ██   ████   ███████ ███████     ██   ██ ██    ██         ██████ ███████ ██ ")
+	fmt.Println("                                                                                                          ")
+	fmt.Println("                                                                                                          ")
+}
+
+// 添加版权信息显示函数
+func printWelcomeBanner(projectName string) {
+	cyan := color.New(color.FgCyan, color.Bold)
+	green := color.New(color.FgGreen, color.Bold)
+	yellow := color.New(color.FgYellow, color.Bold)
+
+	cyan.Println(" ██████   ██████  ██████   █████  ██    ██ ███████ ██          ██   ██ ██ ████████      ██████ ██      ██ ")
+	cyan.Println("██       ██    ██ ██   ██ ██   ██ ██    ██ ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
+	cyan.Println("██   ███ ██    ██ ██████  ███████ ██    ██ █████   ██          █████   ██    ██        ██      ██      ██ ")
+	cyan.Println("██    ██ ██    ██ ██   ██ ██   ██  ██  ██  ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
+	cyan.Println(" ██████   ██████  ██   ██ ██   ██   ████   ███████ ███████     ██   ██ ██    ██         ██████ ███████ ██ ")
+	cyan.Println("         ")
+	green.Println("                    +++++++++++++++++++🎉欢迎使用 Goravel Kit CLI 🏆+++++++++++++++++++")
+	yellow.Printf("                    |·<<达州葫芦科技>>研发\n")
+	yellow.Printf("                    |·作者: yuanhaozhuzhu@hotmail.com\n")
+	yellow.Printf("                    |·开发时间: 2025-08-22\n")
+	yellow.Printf("                    |·版本号: v1.0.0\n")
+	yellow.Printf("                    |·版本说明: Goravel 项目脚手架工具\n")
+	yellow.Printf("                    |·版本时间: 2025-08-22\n")
+	cyan.Println("                    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+	fmt.Printf("\n")
+	color.New(color.FgHiWhite, color.Bold).Printf("🚀 开始创建 Goravel 项目: %s\n", projectName)
+	fmt.Printf("\n")
+}
+
 func createNewProject(c *cli.Context) error {
 	if c.Args().Len() < 1 {
 		return fmt.Errorf("project name is required\nUsage: goravel-kit-cli new <project-name>")
@@ -63,7 +100,7 @@ func createNewProject(c *cli.Context) error {
 		repoURL = "https://github.com/hulutech-web/goravel-kit.git"
 	}
 
-	fmt.Printf("🚀 Creating Goravel project: %s\n", projectName)
+	printWelcomeBanner(projectName)
 	fmt.Printf("📦 Template: hulutech-web/goravel-kit@%s\n", branch)
 
 	if verbose {
