@@ -5,9 +5,9 @@ import (
 	"time"
 )
 
-func CheckGitHubAccess() bool {
+func CheckGiteeAccess() bool {
 	timeout := 10 * time.Second
-	conn, err := net.DialTimeout("tcp", "github.com:443", timeout)
+	conn, err := net.DialTimeout("tcp", "gitee.com:443", timeout)
 	if err != nil {
 		return false
 	}

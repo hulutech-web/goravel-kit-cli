@@ -131,14 +131,14 @@ func createNewProject(c *cli.Context) error {
 	if !giteeOnly && !githubOnly {
 		color.New(color.FgHiCyan).Printf("🌐 检测网络连接...\n")
 
-		if utils.CheckGitHubAccess() {
-			networkStatus = "GitHub 访问正常"
-			autoDetectedGiteeOnly = false
-		} else {
-			networkStatus = "GitHub 访问失败，自动切换到 Gitee"
+		if utils.CheckGiteeAccess() {
+			networkStatus = "Gitee 访问正常"
 			autoDetectedGiteeOnly = true
 			// 自动启用 gitee-only 模式
 			giteeOnly = true
+		} else {
+			networkStatus = "GitHub 访问失败，自动切换到 GitHub"
+			autoDetectedGiteeOnly = true
 		}
 		color.New(color.FgHiCyan).Printf("   %s\n", networkStatus)
 	}
