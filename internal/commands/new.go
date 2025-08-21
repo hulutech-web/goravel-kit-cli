@@ -316,6 +316,27 @@ func createNewProject(c *cli.Context) error {
 		return fmt.Errorf("❌ 创建项目失败: %w", err)
 	}
 	color.New(color.FgHiGreen).Printf("📁 项目结构创建完成\n")
+	// 创建.env文件，通过copy .env.example得到，然后再更新
+	// 创建 .env 文件，通过复制 .env.example 得到
+	envExamplePath := filepath.Join(projectName, ".env.example")
+	envPath := filepath.Join(projectName, ".env")
+	if utils.FileExists(envExamplePath) {
+		input, err := os.ReadFile(envExamplePath)
+		if err != nil {
+			return fmt.Errorf("❌ 读取 .env.example 文件失败: %w", err)
+		}
+		err = os.WriteFile(envPath, input, 0644)
+		if err != nil {
+			return fmt.Errorf("❌ 创建 .env 文件失败: %w", err)
+		}
+		if verbose {
+			color.New(color.FgHiGreen).Printf("✅ 已从 .env.example 复制生成 .env 文件\n")
+		}
+	} else {
+		if verbose {
+			color.New(color.FgHiYellow).Printf("⚠️  未找到 .env.example，跳过 .env 文件创建\n")
+		}
+	}
 
 	// 更新环境文件
 	if err := updateEnvFile(projectName, projectName); err != nil {
@@ -324,11 +345,35 @@ func createNewProject(c *cli.Context) error {
 		color.New(color.FgHiGreen).Printf("📝 已更新 .env 配置\n")
 	}
 
+	// 运行命令行工具，进入项目根路径，执行go run . artisan key:generate，之后再执行go run . artisan jwt:secret
+	// 在项目根目录下依次执行 go run . artisan key:generate 和 go run . artisan jwt:secret
+	commands := [][]string{
+		{"go", "run", ".", "artisan", "key:generate"},
+		{"go", "run", ".", "artisan", "jwt:secret"},
+	}
+
+	for _, cmdArgs := range commands {
+		cmd := utils.NewCommandWithDir(cmdArgs[0], cmdArgs[1:], projectName)
+		if verbose {
+			color.New(color.FgHiCyan).Printf("🔧 执行命令: %s\n", strings.Join(cmdArgs, " "))
+		}
+		output, err := cmd.CombinedOutput()
+		if verbose {
+			fmt.Print(string(output))
+		}
+		if err != nil {
+			color.New(color.FgHiRed).Printf("❌ 命令执行失败: %s\n", strings.Join(cmdArgs, " "))
+			color.New(color.FgHiRed).Printf("   错误信息: %v\n", err)
+			break
+		}
+	}
+
 	color.New(color.FgHiCyan, color.Bold).Printf("\n🎉 项目 '%s' 创建成功！\n", projectName)
 	color.New(color.FgHiWhite).Printf("\n📋 下一步操作:\n")
 	color.New(color.FgHiGreen).Printf("   cd %s\n", projectName)
 	color.New(color.FgHiGreen).Printf("   go mod tidy\n")
-	color.New(color.FgHiGreen).Printf("   go run .\n")
+	color.New(color.FgHiGreen).Printf("   modify .env database configuration!\n")
+	color.New(color.FgHiGreen).Printf("   air\n")
 	color.New(color.FgHiYellow).Printf("\n💡 提示: 使用 --verbose 参数查看详细输出\n")
 
 	return nil
