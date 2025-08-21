@@ -13,8 +13,10 @@ A command-line tool to create new Goravel applications from templates.
 
 # 步骤1：检查当前环境
 ``bash
-echo "GOPATH: $(go env GOPATH)"
-echo "GOBIN: $(go env GOBIN)"
+echo "GOPATH: $(go env GOPATH)"  
+
+echo "GOBIN: $(go env GOBIN)"  
+
 echo "PATH: $PATH"
 ``
 # 查看当前 PATH
