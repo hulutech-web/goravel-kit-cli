@@ -6,11 +6,11 @@
 
 Goravel Kit Cli是一个基于 Goravel Kit 全栈脚手架项目命令行工具，使用非常方便，快速搭建全栈模板框架。  
 
-``bash
+``
 go install github.com/hulutech-web/goravel-kit-cli@latest
 ``
 
-``bash
+``
 goravel-kit-cli new myapp
 ``
 
