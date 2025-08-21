@@ -1,0 +1,835 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>commands: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/hulutech-web/goravel-kit-cli/internal/commands/new.go (13.7%)</option>
+				
+				<option value="file1">github.com/hulutech-web/goravel-kit-cli/internal/utils/cmd.go (100.0%)</option>
+				
+				<option value="file2">github.com/hulutech-web/goravel-kit-cli/internal/utils/file.go (100.0%)</option>
+				
+				<option value="file3">github.com/hulutech-web/goravel-kit-cli/internal/utils/git.go (0.0%)</option>
+				
+				<option value="file4">github.com/hulutech-web/goravel-kit-cli/internal/utils/network.go (0.0%)</option>
+				
+				<option value="file5">github.com/hulutech-web/goravel-kit-cli/main.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package commands
+
+import (
+        "context"
+        "fmt"
+        "io"
+        "os"
+        "path/filepath"
+        "strings"
+        "time"
+
+        "github.com/fatih/color"
+
+        "github.com/hulutech-web/goravel-kit-cli/internal/utils"
+        "github.com/urfave/cli/v2"
+)
+
+// 添加版权信息显示函数
+func printWelcomeBanner(projectName string) <span class="cov0" title="0">{
+        cyan := color.New(color.FgCyan, color.Bold)
+        green := color.New(color.FgGreen, color.Bold)
+        yellow := color.New(color.FgYellow, color.Bold)
+        fmt.Printf("\n")
+        fmt.Printf("\n")
+        cyan.Println(" ██████   ██████  ██████   █████  ██    ██ ███████ ██          ██   ██ ██ ████████      ██████ ██      ██ ")
+        cyan.Println("██       ██    ██ ██   ██ ██   ██ ██    ██ ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
+        cyan.Println("██   ███ ██    ██ ██████  ███████ ██    ██ █████   ██          █████   ██    ██        ██      ██      ██ ")
+        cyan.Println("██    ██ ██    ██ ██   ██ ██   ██  ██  ██  ██      ██          ██  ██  ██    ██        ██      ██      ██ ")
+        cyan.Println(" ██████   ██████  ██   ██ ██   ██   ████   ███████ ███████     ██   ██ ██    ██         ██████ ███████ ██ ")
+        cyan.Println("         ")
+        green.Println("                    +++++++++++++++++++🎉欢迎使用 Goravel Kit CLI 🏆+++++++++++++++++++")
+        yellow.Printf("                    |·&lt;&lt;达州葫芦科技&gt;&gt;研发\n")
+        yellow.Printf("                    |·作者: yuanhaozhuzhu@hotmail.com\n")
+        yellow.Printf("                    |·开发时间: 2025-08-22\n")
+        yellow.Printf("                    |·版本号: v1.0.0\n")
+        yellow.Printf("                    |·版本说明: Goravel 项目脚手架工具\n")
+        yellow.Printf("                    |·版本时间: 2025-08-22\n")
+        cyan.Println("                    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
+        fmt.Printf("\n")
+        color.New(color.FgHiWhite, color.Bold).Printf("🚀 开始创建 Goravel 项目: %s\n", projectName)
+        fmt.Printf("\n")
+}</span>
+
+var NewCommand = &amp;cli.Command{
+        Name:      "new",
+        Usage:     "Create a new Goravel application from template",
+        ArgsUsage: "&lt;project-name&gt;",
+        Action:    createNewProject,
+        Flags: []cli.Flag{
+                &amp;cli.BoolFlag{
+                        Name:  "force",
+                        Usage: "Force create project even if directory exists",
+                },
+                &amp;cli.StringFlag{
+                        Name:  "branch",
+                        Usage: "Git branch to use",
+                        Value: "master",
+                },
+                &amp;cli.BoolFlag{
+                        Name:  "verbose",
+                        Usage: "Show verbose output",
+                },
+                &amp;cli.BoolFlag{
+                        Name:  "ssh",
+                        Usage: "Use SSH URL instead of HTTPS",
+                        Value: true, // 默认启用 SSH
+                },
+                &amp;cli.BoolFlag{
+                        Name:  "https",
+                        Usage: "Use HTTPS URL instead of SSH",
+                        Value: false,
+                },
+                &amp;cli.DurationFlag{
+                        Name:  "timeout",
+                        Usage: "Timeout for download operation",
+                        Value: 3 * time.Minute,
+                },
+                &amp;cli.BoolFlag{
+                        Name:  "no-banner",
+                        Usage: "Don't show welcome banner",
+                },
+                &amp;cli.BoolFlag{
+                        Name:  "gitee-only",
+                        Usage: "Use Gitee mirror only (skip GitHub)",
+                },
+                &amp;cli.BoolFlag{
+                        Name:  "github-only",
+                        Usage: "Use GitHub only (skip Gitee fallback)",
+                },
+        },
+}
+
+func createNewProject(c *cli.Context) error <span class="cov0" title="0">{
+        if c.Args().Len() &lt; 1 </span><span class="cov0" title="0">{
+                return fmt.Errorf("project name is required\nUsage: goravel-kit-cli new &lt;project-name&gt;")
+        }</span>
+
+        <span class="cov0" title="0">projectName := c.Args().First()
+        branch := c.String("branch")
+        force := c.Bool("force")
+        verbose := c.Bool("verbose")
+        useSSH := c.Bool("ssh")
+        useHTTPS := c.Bool("https")
+        timeout := c.Duration("timeout")
+        noBanner := c.Bool("no-banner")
+        giteeOnly := c.Bool("gitee-only")
+        githubOnly := c.Bool("github-only")
+
+        // 处理协议选择逻辑：如果同时指定了 --https，优先使用 HTTPS
+        var protocol string
+        if useHTTPS </span><span class="cov0" title="0">{
+                protocol = "https"
+                useSSH = false
+        }</span> else<span class="cov0" title="0"> {
+                protocol = "ssh"
+                useSSH = true
+        }</span>
+
+        // 显示版权信息（除非指定不显示）
+        <span class="cov0" title="0">if !noBanner </span><span class="cov0" title="0">{
+                printWelcomeBanner(projectName)
+        }</span> else<span class="cov0" title="0"> {
+                color.New(color.FgHiWhite, color.Bold).Printf("🚀 Creating Goravel project: %s\n", projectName)
+                fmt.Printf("\n")
+        }</span>
+
+        // 智能选择镜像源策略
+        <span class="cov0" title="0">var autoDetectedGiteeOnly bool
+        var networkStatus string
+
+        // 如果不是强制指定了镜像源，就自动检测网络
+        if !giteeOnly &amp;&amp; !githubOnly </span><span class="cov0" title="0">{
+                color.New(color.FgHiCyan).Printf("🌐 检测网络连接...\n")
+
+                if utils.CheckGiteeAccess() </span><span class="cov0" title="0">{
+                        networkStatus = "Gitee 访问正常"
+                        autoDetectedGiteeOnly = true
+                        // 自动启用 gitee-only 模式
+                        giteeOnly = true
+                }</span> else<span class="cov0" title="0"> {
+                        networkStatus = "GitHub 访问失败，自动切换到 GitHub"
+                        autoDetectedGiteeOnly = true
+                }</span>
+                <span class="cov0" title="0">color.New(color.FgHiCyan).Printf("   %s\n", networkStatus)</span>
+        }
+
+        // 定义镜像源
+        <span class="cov0" title="0">mirrors := []struct {
+                name    string
+                url     string
+                sshURL  string
+                enabled bool
+        }{
+                {
+                        name:    "GitHub",
+                        url:     "https://github.com/hulutech-web/goravel-kit.git",
+                        sshURL:  "git@github.com:hulutech-web/goravel-kit.git",
+                        enabled: !giteeOnly,
+                },
+                {
+                        name:    "Gitee",
+                        url:     "https://gitee.com/hulutech/goravel-kit.git",
+                        sshURL:  "git@gitee.com:hulutech/goravel-kit.git",
+                        enabled: !githubOnly,
+                },
+        }
+
+        // 显示当前使用的镜像源策略
+        color.New(color.FgHiBlue).Printf("📦 模板策略: ")
+        switch </span>{
+        case giteeOnly &amp;&amp; autoDetectedGiteeOnly:<span class="cov0" title="0">
+                color.New(color.FgHiBlue).Printf("自动选择 Gitee 镜像 (网络检测)\n")</span>
+        case giteeOnly:<span class="cov0" title="0">
+                color.New(color.FgHiBlue).Printf("强制使用 Gitee 镜像 (用户指定)\n")</span>
+        case githubOnly:<span class="cov0" title="0">
+                color.New(color.FgHiBlue).Printf("强制使用 GitHub 镜像 (用户指定)\n")</span>
+        default:<span class="cov0" title="0">
+                color.New(color.FgHiBlue).Printf("自动选择镜像 (GitHub → Gitee)\n")</span>
+        }
+
+        <span class="cov0" title="0">color.New(color.FgHiBlue).Printf("🌿 分支: %s\n", branch)
+        color.New(color.FgHiBlue).Printf("🔗 协议: %s (默认)\n", protocol)
+
+        if verbose </span><span class="cov0" title="0">{
+                color.New(color.FgHiMagenta).Printf("📡 可用镜像源:\n")
+                for _, mirror := range mirrors </span><span class="cov0" title="0">{
+                        if mirror.enabled </span><span class="cov0" title="0">{
+                                var url string
+                                if useSSH </span><span class="cov0" title="0">{
+                                        url = mirror.sshURL
+                                }</span> else<span class="cov0" title="0"> {
+                                        url = mirror.url
+                                }</span>
+                                <span class="cov0" title="0">color.New(color.FgHiMagenta).Printf("   - %s: %s\n", mirror.name, url)</span>
+                        }
+                }
+                <span class="cov0" title="0">color.New(color.FgHiYellow).Printf("⏱️  超时时间: %v\n", timeout)</span>
+        }
+
+        // 检查目录是否存在
+        <span class="cov0" title="0">if utils.DirectoryExists(projectName) &amp;&amp; !force </span><span class="cov0" title="0">{
+                return fmt.Errorf("❌ 目录 '%s' 已存在。使用 --force 参数覆盖", projectName)
+        }</span>
+
+        // 创建临时目录
+        <span class="cov0" title="0">tempDir, err := os.MkdirTemp("", "goravel-kit-*")
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("❌ 创建临时目录失败: %w", err)
+        }</span>
+        <span class="cov0" title="0">defer func() </span><span class="cov0" title="0">{
+                if err := os.RemoveAll(tempDir); err != nil &amp;&amp; verbose </span><span class="cov0" title="0">{
+                        color.New(color.FgHiRed).Printf("⚠️  警告: 清理临时目录失败: %v\n", err)
+                }</span>
+        }()
+
+        <span class="cov0" title="0">var downloadError error
+        var successMirror string
+        var successRepoURL string
+
+        // 尝试从各个镜像源下载
+        for _, mirror := range mirrors </span><span class="cov0" title="0">{
+                if !mirror.enabled </span><span class="cov0" title="0">{
+                        continue</span>
+                }
+
+                // 选择 URL（默认使用 SSH）
+                <span class="cov0" title="0">var repoURL string
+                if useSSH </span><span class="cov0" title="0">{
+                        repoURL = mirror.sshURL
+                }</span> else<span class="cov0" title="0"> {
+                        repoURL = mirror.url
+                }</span>
+
+                <span class="cov0" title="0">color.New(color.FgHiGreen).Printf("\n📥 尝试从 %s 下载模板...\n", mirror.name)
+                color.New(color.FgHiCyan).Printf("   📍 仓库: %s\n", repoURL)
+                color.New(color.FgHiCyan).Printf("   🌿 分支: %s\n", branch)
+
+                // 使用带超时的上下文
+                ctx, cancel := context.WithTimeout(context.Background(), timeout)
+
+                // 下载模板
+                err := utils.CloneRepositoryWithContext(ctx, repoURL, branch, tempDir, verbose)
+                cancel()
+
+                if err != nil </span><span class="cov0" title="0">{
+                        downloadError = err
+                        color.New(color.FgHiRed).Printf("❌ %s 下载失败: %v\n", mirror.name, err)
+
+                        // 如果不是最后一个镜像源，继续尝试下一个
+                        if hasNextMirror(mirrors, mirror.name) </span><span class="cov0" title="0">{
+                                color.New(color.FgHiYellow).Printf("🔄 尝试下一个镜像源...\n")
+                                continue</span>
+                        }
+                } else<span class="cov0" title="0"> {
+                        successMirror = mirror.name
+                        successRepoURL = repoURL
+                        downloadError = nil
+                        break</span>
+                }
+        }
+
+        // 检查下载结果
+        <span class="cov0" title="0">if downloadError != nil </span><span class="cov0" title="0">{
+                color.New(color.FgHiRed).Printf("\n❌ 所有镜像源下载均失败！\n")
+                color.New(color.FgHiYellow).Printf("💡 解决方案:\n")
+                color.New(color.FgHiYellow).Printf("   1. 检查网络连接\n")
+                color.New(color.FgHiYellow).Printf("   2. 使用 --ssh 参数尝试 SSH 方式\n")
+                color.New(color.FgHiYellow).Printf("   3. 使用 --gitee-only 强制使用 Gitee\n")
+                color.New(color.FgHiYellow).Printf("   4. 使用 --github-only 强制使用 GitHub\n")
+                color.New(color.FgHiYellow).Printf("   5. 使用 --verbose 查看详细错误信息\n")
+                color.New(color.FgHiYellow).Printf("   6. 检查分支是否存在: %s\n", branch)
+                return fmt.Errorf("所有镜像源下载失败")
+        }</span>
+
+        <span class="cov0" title="0">color.New(color.FgHiGreen).Printf("\n✅ 成功从 %s 下载模板\n", successMirror)
+        color.New(color.FgHiCyan).Printf("   📍 源仓库: %s\n", successRepoURL)
+        color.New(color.FgHiCyan).Printf("   🌿 分支: %s\n", branch)
+        color.New(color.FgHiGreen).Printf("🔄 处理模板文件中...\n")
+
+        // 移除.git目录
+        gitDir := filepath.Join(tempDir, ".git")
+        if utils.DirectoryExists(gitDir) </span><span class="cov0" title="0">{
+                if err := os.RemoveAll(gitDir); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("❌ 移除 .git 目录失败: %w", err)
+                }</span>
+                <span class="cov0" title="0">if verbose </span><span class="cov0" title="0">{
+                        color.New(color.FgHiYellow).Printf("🗑️  已移除 .git 目录\n")
+                }</span>
+        }
+
+        // 移除其他不必要的文件
+        <span class="cov0" title="0">unnecessaryFiles := []string{".github", ".gitignore", "LICENSE", "README.md"}
+        for _, file := range unnecessaryFiles </span><span class="cov0" title="0">{
+                filePath := filepath.Join(tempDir, file)
+                if utils.DirectoryExists(filePath) || utils.FileExists(filePath) </span><span class="cov0" title="0">{
+                        os.RemoveAll(filePath)
+                        if verbose </span><span class="cov0" title="0">{
+                                color.New(color.FgHiYellow).Printf("🗑️  已移除: %s\n", file)
+                        }</span>
+                }
+        }
+
+        // 如果目标目录已存在，先删除
+        <span class="cov0" title="0">if utils.DirectoryExists(projectName) </span><span class="cov0" title="0">{
+                if err := os.RemoveAll(projectName); err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("❌ 移除已存在目录失败: %w", err)
+                }</span>
+                <span class="cov0" title="0">if verbose </span><span class="cov0" title="0">{
+                        color.New(color.FgHiYellow).Printf("🗑️  已移除已存在目录: %s\n", projectName)
+                }</span>
+        }
+
+        // 移动到目标位置
+        <span class="cov0" title="0">if err := moveDirectoryCrossPlatform(tempDir, projectName); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("❌ 创建项目失败: %w", err)
+        }</span>
+        <span class="cov0" title="0">color.New(color.FgHiGreen).Printf("📁 项目结构创建完成\n")
+        // 创建.env文件，通过copy .env.example得到，然后再更新
+        // 创建 .env 文件，通过复制 .env.example 得到
+        envExamplePath := filepath.Join(projectName, ".env.example")
+        envPath := filepath.Join(projectName, ".env")
+        if utils.FileExists(envExamplePath) </span><span class="cov0" title="0">{
+                input, err := os.ReadFile(envExamplePath)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("❌ 读取 .env.example 文件失败: %w", err)
+                }</span>
+                <span class="cov0" title="0">err = os.WriteFile(envPath, input, 0644)
+                if err != nil </span><span class="cov0" title="0">{
+                        return fmt.Errorf("❌ 创建 .env 文件失败: %w", err)
+                }</span>
+                <span class="cov0" title="0">if verbose </span><span class="cov0" title="0">{
+                        color.New(color.FgHiGreen).Printf("✅ 已从 .env.example 复制生成 .env 文件\n")
+                }</span>
+        } else<span class="cov0" title="0"> {
+                if verbose </span><span class="cov0" title="0">{
+                        color.New(color.FgHiYellow).Printf("⚠️  未找到 .env.example，跳过 .env 文件创建\n")
+                }</span>
+        }
+
+        // 更新环境文件
+        <span class="cov0" title="0">if err := updateEnvFile(projectName, projectName); err != nil </span><span class="cov0" title="0">{
+                color.New(color.FgHiYellow).Printf("⚠️  警告: 更新 .env 文件失败: %v\n", err)
+        }</span> else<span class="cov0" title="0"> {
+                color.New(color.FgHiGreen).Printf("📝 已更新 .env 配置\n")
+        }</span>
+
+        // 运行命令行工具，进入项目根路径，执行go run . artisan key:generate，之后再执行go run . artisan jwt:secret
+        // 在项目根目录下依次执行 go run . artisan key:generate 和 go run . artisan jwt:secret
+        <span class="cov0" title="0">commands := [][]string{
+                {"go", "run", ".", "artisan", "key:generate"},
+                {"go", "run", ".", "artisan", "jwt:secret"},
+        }
+
+        for _, cmdArgs := range commands </span><span class="cov0" title="0">{
+                cmd := utils.NewCommandWithDir(cmdArgs[0], cmdArgs[1:], projectName)
+                if verbose </span><span class="cov0" title="0">{
+                        color.New(color.FgHiCyan).Printf("🔧 执行命令: %s\n", strings.Join(cmdArgs, " "))
+                }</span>
+                <span class="cov0" title="0">output, err := cmd.CombinedOutput()
+                if verbose </span><span class="cov0" title="0">{
+                        fmt.Print(string(output))
+                }</span>
+                <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                        color.New(color.FgHiRed).Printf("❌ 命令执行失败: %s\n", strings.Join(cmdArgs, " "))
+                        color.New(color.FgHiRed).Printf("   错误信息: %v\n", err)
+                        break</span>
+                }
+        }
+
+        <span class="cov0" title="0">color.New(color.FgHiCyan, color.Bold).Printf("\n🎉 项目 '%s' 创建成功！\n", projectName)
+        color.New(color.FgHiWhite).Printf("\n📋 下一步操作:\n")
+        color.New(color.FgHiGreen).Printf("   cd %s\n", projectName)
+        color.New(color.FgHiGreen).Printf("   go mod tidy\n")
+        color.New(color.FgHiGreen).Printf("   modify .env database configuration!\n")
+        color.New(color.FgHiGreen).Printf("   air\n")
+        color.New(color.FgHiYellow).Printf("\n💡 提示: 使用 --verbose 参数查看详细输出\n")
+
+        return nil</span>
+}
+
+// hasNextMirror 检查是否还有下一个可用的镜像源
+func hasNextMirror(mirrors []struct {
+        name    string
+        url     string
+        sshURL  string
+        enabled bool
+}, currentMirror string) bool <span class="cov6" title="3">{
+        foundCurrent := false
+        for _, mirror := range mirrors </span><span class="cov10" title="6">{
+                if !mirror.enabled </span><span class="cov1" title="1">{
+                        continue</span>
+                }
+                <span class="cov9" title="5">if foundCurrent </span><span class="cov1" title="1">{
+                        return true
+                }</span>
+                <span class="cov7" title="4">if mirror.name == currentMirror </span><span class="cov6" title="3">{
+                        foundCurrent = true
+                }</span>
+        }
+        <span class="cov4" title="2">return false</span>
+}
+
+func updateEnvFile(projectDir, projectName string) error <span class="cov4" title="2">{
+        envPath := filepath.Join(projectDir, ".env")
+        if !utils.FileExists(envPath) </span><span class="cov1" title="1">{
+                return nil
+        }</span>
+
+        <span class="cov1" title="1">content, err := os.ReadFile(envPath)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov1" title="1">envContent := string(content)
+        envContent = strings.Replace(envContent, "APP_NAME=Goravel", "APP_NAME="+projectName, 1)
+        envContent = strings.Replace(envContent, "APP_URL=http://localhost", "APP_URL=http://localhost:3000", 1)
+
+        return os.WriteFile(envPath, []byte(envContent), 0644)</span>
+}
+
+// moveDirectoryCrossPlatform 跨平台的目录移动函数
+func moveDirectoryCrossPlatform(source, destination string) error <span class="cov1" title="1">{
+        // 尝试直接重命名（同磁盘分区时有效）
+        err := os.Rename(source, destination)
+        if err == nil </span><span class="cov1" title="1">{
+                return nil
+        }</span>
+
+        // 如果重命名失败（可能是因为跨磁盘），使用复制+删除的方式
+        <span class="cov0" title="0">color.New(color.FgHiYellow).Printf("⚠️  跨磁盘操作，使用复制方式移动文件...\n")
+
+        // 创建目标目录
+        if err := os.MkdirAll(destination, 0755); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("创建目标目录失败: %w", err)
+        }</span>
+
+        // 复制所有文件和子目录
+        <span class="cov0" title="0">err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error </span><span class="cov0" title="0">{
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                // 计算相对路径
+                <span class="cov0" title="0">relPath, err := filepath.Rel(source, path)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov0" title="0">destPath := filepath.Join(destination, relPath)
+
+                if info.IsDir() </span><span class="cov0" title="0">{
+                        // 创建目录
+                        return os.MkdirAll(destPath, info.Mode())
+                }</span> else<span class="cov0" title="0"> {
+                        // 复制文件
+                        return copyFile(path, destPath)
+                }</span>
+        })
+
+        <span class="cov0" title="0">if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("复制文件失败: %w", err)
+        }</span>
+
+        // 删除源目录
+        <span class="cov0" title="0">if err := os.RemoveAll(source); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("清理源目录失败: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// copyFile 复制单个文件
+func copyFile(src, dst string) error <span class="cov1" title="1">{
+        // 打开源文件
+        srcFile, err := os.Open(src)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov1" title="1">defer srcFile.Close()
+
+        // 创建目标文件
+        dstFile, err := os.Create(dst)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov1" title="1">defer dstFile.Close()
+
+        // 复制内容
+        _, err = io.Copy(dstFile, srcFile)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // 复制文件权限
+        <span class="cov1" title="1">srcInfo, err := os.Stat(src)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov1" title="1">return os.Chmod(dst, srcInfo.Mode())</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package utils
+
+import (
+        "os/exec"
+)
+
+// NewCommandWithDir 创建一个在指定目录下执行的命令
+// name: 命令名称
+// args: 命令参数
+// dir: 工作目录
+func NewCommandWithDir(name string, args []string, dir string) *exec.Cmd <span class="cov8" title="1">{
+        cmd := exec.Command(name, args...)
+        cmd.Dir = dir
+        return cmd
+}</span>
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package utils
+
+import (
+        "os"
+)
+
+func DirectoryExists(path string) bool <span class="cov10" title="6">{
+        info, err := os.Stat(path)
+        if os.IsNotExist(err) </span><span class="cov6" title="3">{
+                return false
+        }</span>
+        <span class="cov6" title="3">return info.IsDir()</span>
+}
+
+func FileExists(path string) bool <span class="cov10" title="6">{
+        info, err := os.Stat(path)
+        if os.IsNotExist(err) </span><span class="cov4" title="2">{
+                return false
+        }</span>
+        <span class="cov7" title="4">return !info.IsDir()</span>
+}
+
+func MoveDirectory(source, destination string) error <span class="cov1" title="1">{
+        return os.Rename(source, destination)
+}</span>
+
+func RemoveDirectory(path string) error <span class="cov1" title="1">{
+        return os.RemoveAll(path)
+}</span>
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package utils
+
+import (
+        "bufio"
+        "context"
+        "fmt"
+        "io"
+        "os/exec"
+        "path/filepath"
+        "strings"
+        "time"
+)
+
+func CloneRepositoryWithContext(ctx context.Context, repoURL, branch, targetDir string, verbose bool) error <span class="cov0" title="0">{
+        args := []string{"clone", "--progress", "--depth", "1"}
+
+        if branch != "" &amp;&amp; branch != "master" </span><span class="cov0" title="0">{
+                args = append(args, "--branch", branch)
+        }</span>
+
+        <span class="cov0" title="0">args = append(args, repoURL, targetDir)
+
+        cmd := exec.CommandContext(ctx, "git", args...)
+
+        if verbose </span><span class="cov0" title="0">{
+                fmt.Printf("🔧 Running command: git %s\n", strings.Join(args, " "))
+        }</span>
+
+        // 获取标准输出管道
+        <span class="cov0" title="0">stdoutPipe, err := cmd.StdoutPipe()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get stdout pipe: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">stderrPipe, err := cmd.StderrPipe()
+        if err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to get stderr pipe: %w", err)
+        }</span>
+
+        // 记录开始时间
+        <span class="cov0" title="0">startTime := time.Now()
+
+        // 启动命令
+        if err := cmd.Start(); err != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to start git clone: %w", err)
+        }</span>
+
+        // 实时读取输出
+        <span class="cov0" title="0">go streamOutput(stdoutPipe, "git", verbose)
+        go streamOutput(stderrPipe, "git", verbose)
+
+        // 等待命令完成
+        err = cmd.Wait()
+        duration := time.Since(startTime)
+
+        if err != nil </span><span class="cov0" title="0">{
+                // 检查超时
+                if ctx.Err() == context.DeadlineExceeded </span><span class="cov0" title="0">{
+                        return fmt.Errorf("download timed out after %v", duration)
+                }</span>
+
+                // 处理特定错误类型
+                <span class="cov0" title="0">switch </span>{
+                case strings.Contains(err.Error(), "Authentication failed"),
+                        strings.Contains(err.Error(), "could not read Username"),
+                        strings.Contains(err.Error(), "Permission denied"):<span class="cov0" title="0">
+                        return fmt.Errorf("authentication failed after %v. Try: goravel-kit-cli new %s --ssh", duration, filepath.Base(targetDir))</span>
+
+                case strings.Contains(err.Error(), "Repository not found"):<span class="cov0" title="0">
+                        return fmt.Errorf("repository not found: %s (took %v)", repoURL, duration)</span>
+
+                case strings.Contains(err.Error(), "could not find remote ref"):<span class="cov0" title="0">
+                        return fmt.Errorf("branch '%s' not found (took %v)", branch, duration)</span>
+
+                case strings.Contains(err.Error(), "Host key verification failed"):<span class="cov0" title="0">
+                        return fmt.Errorf("SSH host key verification failed. Please check your SSH configuration")</span>
+
+                default:<span class="cov0" title="0">
+                        return fmt.Errorf("git clone failed after %v: %w", duration, err)</span>
+                }
+        }
+
+        <span class="cov0" title="0">if verbose </span><span class="cov0" title="0">{
+                fmt.Printf("✅ Download completed in %v\n", duration)
+        }</span> else<span class="cov0" title="0"> {
+                fmt.Printf("✅ Download completed\n")
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+
+// streamOutput 实时流式输出
+func streamOutput(reader io.Reader, prefix string, verbose bool) <span class="cov0" title="0">{
+        scanner := bufio.NewScanner(reader)
+        for scanner.Scan() </span><span class="cov0" title="0">{
+                line := scanner.Text()
+                if verbose </span><span class="cov0" title="0">{
+                        fmt.Printf("%s: %s\n", prefix, line)
+                }</span> else<span class="cov0" title="0"> {
+                        // 非详细模式只显示进度信息
+                        if strings.Contains(line, "Receiving objects:") ||
+                                strings.Contains(line, "Resolving deltas:") ||
+                                strings.Contains(line, "remote:") </span><span class="cov0" title="0">{
+                                fmt.Printf("📦 %s\n", strings.TrimSpace(line))
+                        }</span>
+                }
+        }
+}
+
+// 保持兼容性
+func CloneRepository(repoURL, branch, targetDir string) error <span class="cov0" title="0">{
+        return CloneRepositoryWithContext(context.Background(), repoURL, branch, targetDir, false)
+}</span>
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package utils
+
+import (
+        "net"
+        "time"
+)
+
+func CheckGiteeAccess() bool <span class="cov0" title="0">{
+        timeout := 10 * time.Second
+        conn, err := net.DialTimeout("tcp", "gitee.com:443", timeout)
+        if err != nil </span><span class="cov0" title="0">{
+                return false
+        }</span>
+        <span class="cov0" title="0">defer conn.Close()
+        return true</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package main
+
+import (
+        "log"
+        "os"
+
+        "github.com/hulutech-web/goravel-kit-cli/internal/commands"
+        "github.com/urfave/cli/v2"
+)
+
+func main() <span class="cov0" title="0">{
+        app := &amp;cli.App{
+                Name:     "goravel-kit-cli",
+                Usage:    "A CLI tool to create new Goravel applications from templates",
+                Version:  "v1.0.0",
+                Commands: []*cli.Command{commands.NewCommand},
+                Description: `Goravel Kit CLI - Quickly create new Goravel projects from template.
+
+Examples:
+  goravel-kit-cli new my-app
+  goravel-kit-cli new my-app --ssh --verbose
+  goravel-kit-cli new my-app --branch develop --force`,
+        }
+
+        if err := app.Run(os.Args); err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
