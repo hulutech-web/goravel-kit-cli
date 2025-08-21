@@ -3,11 +3,13 @@ package commands
 import (
 	"context"
 	"fmt"
-	"github.com/fatih/color"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
 
 	"github.com/hulutech-web/goravel-kit-cli/internal/utils"
 	"github.com/urfave/cli/v2"
@@ -310,7 +312,7 @@ func createNewProject(c *cli.Context) error {
 	}
 
 	// 移动到目标位置
-	if err := utils.MoveDirectory(tempDir, projectName); err != nil {
+	if err := moveDirectoryCrossPlatform(tempDir, projectName); err != nil {
 		return fmt.Errorf("❌ 创建项目失败: %w", err)
 	}
 	color.New(color.FgHiGreen).Printf("📁 项目结构创建完成\n")
@@ -370,4 +372,86 @@ func updateEnvFile(projectDir, projectName string) error {
 	envContent = strings.Replace(envContent, "APP_URL=http://localhost", "APP_URL=http://localhost:3000", 1)
 
 	return os.WriteFile(envPath, []byte(envContent), 0644)
+}
+
+// moveDirectoryCrossPlatform 跨平台的目录移动函数
+func moveDirectoryCrossPlatform(source, destination string) error {
+	// 尝试直接重命名（同磁盘分区时有效）
+	err := os.Rename(source, destination)
+	if err == nil {
+		return nil
+	}
+
+	// 如果重命名失败（可能是因为跨磁盘），使用复制+删除的方式
+	color.New(color.FgHiYellow).Printf("⚠️  跨磁盘操作，使用复制方式移动文件...\n")
+
+	// 创建目标目录
+	if err := os.MkdirAll(destination, 0755); err != nil {
+		return fmt.Errorf("创建目标目录失败: %w", err)
+	}
+
+	// 复制所有文件和子目录
+	err = filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 计算相对路径
+		relPath, err := filepath.Rel(source, path)
+		if err != nil {
+			return err
+		}
+
+		destPath := filepath.Join(destination, relPath)
+
+		if info.IsDir() {
+			// 创建目录
+			return os.MkdirAll(destPath, info.Mode())
+		} else {
+			// 复制文件
+			return copyFile(path, destPath)
+		}
+	})
+
+	if err != nil {
+		return fmt.Errorf("复制文件失败: %w", err)
+	}
+
+	// 删除源目录
+	if err := os.RemoveAll(source); err != nil {
+		return fmt.Errorf("清理源目录失败: %w", err)
+	}
+
+	return nil
+}
+
+// copyFile 复制单个文件
+func copyFile(src, dst string) error {
+	// 打开源文件
+	srcFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer srcFile.Close()
+
+	// 创建目标文件
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	// 复制内容
+	_, err = io.Copy(dstFile, srcFile)
+	if err != nil {
+		return err
+	}
+
+	// 复制文件权限
+	srcInfo, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
+
+	return os.Chmod(dst, srcInfo.Mode())
 }
